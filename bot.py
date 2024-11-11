@@ -98,7 +98,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Основная функция
 def main():
     # Получение токена
-    TOKEN = os.getenv("BOT_TOKEN")
+    TOKEN = "7609323848:AAEi4fr8Bv6sVkKPNVa_mwBigc5lcVh2K2c"
 
     # Инициализация базы данных
     init_db()
