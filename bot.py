@@ -101,7 +101,7 @@ def handle_message(update: Update, context: CallbackContext):
 # Основная функция
 def main():
     # Замените TOKEN на токен вашего бота
-    TOKEN = "ВАШ_ТОКЕН"
+    TOKEN = "7609323848:AAEi4fr8Bv6sVkKPNVa_mwBigc5lcVh2K2c"
     updater = Updater(TOKEN)
     dispatcher = updater.dispatcher
     
