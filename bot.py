@@ -1,15 +1,10 @@
 from telegram import Update
-from telegram.ext import (
-    Updater,
-    CommandHandler,
-    MessageHandler,
-    filters,  # Импортируем filters вместо Filters
-    CallbackContext
-)
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import sqlite3
 from datetime import datetime, timedelta
+import os
 
-# Инициализация базы данных
+# Функции для работы с базой данных
 def init_db():
     conn = sqlite3.connect('bot_statistics.db')
     cursor = conn.cursor()
@@ -25,7 +20,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Запись данных в базу
 def record_data(user_id, username, date):
     conn = sqlite3.connect('bot_statistics.db')
     cursor = conn.cursor()
@@ -46,7 +40,6 @@ def record_data(user_id, username, date):
     conn.commit()
     conn.close()
 
-# Получение отчета
 def get_report(period):
     conn = sqlite3.connect('bot_statistics.db')
     cursor = conn.cursor()
@@ -79,49 +72,47 @@ def get_report(period):
         report += f"{row[0]}: {row[1]} сообщений\n"
     return report
 
-# Обработчик команды start
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text("Привет! Отправь '+' для записи статистики.")
+# Хэндлеры бота
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Привет! Отправь '+' для записи статистики.")
 
-# Обработчик команды report
-def report(update: Update, context: CallbackContext):
+async def report(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if not args:
-        update.message.reply_text("Используй: /report [week|month|year]")
+        await update.message.reply_text("Используй: /report [week|month|year]")
         return
     
     period = args[0]
     report_data = get_report(period)
-    update.message.reply_text(report_data)
+    await update.message.reply_text(report_data)
 
-# Обработчик текстовых сообщений
-def handle_message(update: Update, context: CallbackContext):
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.text == "+":
         user_id = update.message.from_user.id
         username = update.message.from_user.username
         date = datetime.now().strftime('%Y-%m-%d')
         
         record_data(user_id, username, date)
-        update.message.reply_text("Записано!")
+        await update.message.reply_text("Записано!")
 
 # Основная функция
 def main():
-    # Замените TOKEN на токен вашего бота
-    TOKEN = "7609323848:AAEi4fr8Bv6sVkKPNVa_mwBigc5lcVh2K2c"
-    updater = Updater(TOKEN)
-    dispatcher = updater.dispatcher
-    
+    # Получение токена
+    TOKEN = os.getenv("BOT_TOKEN")
+
     # Инициализация базы данных
     init_db()
     
-    # Обработчики команд
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("report", report))
-    dispatcher.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    # Создание приложения
+    application = Application.builder().token(TOKEN).build()
+
+    # Регистрация хэндлеров
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("report", report))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Запуск бота
-    updater.start_polling()
-    updater.idle()
+    application.run_polling()
 
 if __name__ == "__main__":
     main()
