@@ -1,5 +1,11 @@
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import (
+    Updater,
+    CommandHandler,
+    MessageHandler,
+    filters,  # Импортируем filters вместо Filters
+    CallbackContext
+)
 import sqlite3
 from datetime import datetime, timedelta
 
@@ -111,7 +117,7 @@ def main():
     # Обработчики команд
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("report", report))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    dispatcher.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Запуск бота
     updater.start_polling()
